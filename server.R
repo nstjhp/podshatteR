@@ -9,6 +9,9 @@ source("funcs.R")
 FLAG = TRUE
 
 shinyServer(function(input, output, session) {
+  output$dummyPlot = renderPlot({
+    print(emptyPlot())
+  })
 
   getUserData = reactive({
     ## input$file1 will be NULL initially. After the user selects and uploads a 

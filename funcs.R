@@ -63,4 +63,13 @@ halfLife = function(x) {
     return(data.frame(halfLife=(1.0/b)*log(y/A), halfInitialPods=y))
 }
 
+emptyPlot = function() {
+  p = ggplot(data.frame()) + geom_blank() + xlim(0, 100) + ylim(0, 10) +
+    annotate("text", label = "No data!",
+             x = 50, y = 5, size = 10, colour = "red") + theme(
+                                         axis.text=element_blank(),
+                                         axis.title=element_blank(),
+                                         axis.ticks=element_blank())
+  return(p)
+}
 

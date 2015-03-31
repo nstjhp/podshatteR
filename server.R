@@ -161,7 +161,13 @@ cat(selLines, "*****HERE3*********\n")
 
   output$selectedPlots = renderPlot({
     if(is.null(selPlotInput())) {return(NULL)}
-    print(selPlotInput())
+    ## override free_x if the user wants fixed ## THIS IS REACTIVE
+    if(input$sameXaxis=="fixed") {
+      print(selPlotInput() + facet_wrap(~Line,scales="fixed"))
+    }
+    else {
+      print(selPlotInput())
+    }
   }, height=1000)
 
   output$plotSelector <- renderUI({

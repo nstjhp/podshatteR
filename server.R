@@ -92,6 +92,7 @@ shinyServer(function(input, output, session) {
     allHalfLives = with(allHalfLives, cbind(colsplit(.id, pattern = "\\.", names = c("Block","Line.Sample")), halfLife, halfInitialPods))
     allHalfLives = with(allHalfLives, cbind(Block, colsplit(Line.Sample, pattern = "\\.", names = c("Line","Sample")), halfLife, halfInitialPods))
     allHalfLives$Sample = factor(allHalfLives$Sample)
+    allHalfLives$halfLife = round(allHalfLives$halfLife, 4)
 
     return(allHalfLives)
   })
@@ -176,6 +177,14 @@ cat(selLines, "*****HERE3*********\n")
                         #selected = as.list(plotChoices), 
 			inline=TRUE)
   })
+
+## observe({input$selectAll
+##   plotChoices = unique(calcHalfLives()$Line)
+##     updateCheckboxGroupInput(session, 'showPlotChoices', '',
+##                         choices = as.list(plotChoices),
+##                         selected = as.list(plotChoices), 
+## 			inline=TRUE)
+## })
 
   output$downloadSelPlots <- downloadHandler(
     filename <- function() {

@@ -6,7 +6,8 @@ library(grid)
 
 source("funcs.R")
 ## if FLAG = TRUE read the RDS file of all CIs etc from Marie's data
-FLAG = TRUE
+#FLAG = TRUE
+FLAG = FALSE
 
 shinyServer(function(input, output, session) {
   output$dummyPlot = renderPlot({
@@ -125,36 +126,41 @@ shinyServer(function(input, output, session) {
 # Need to essentially subset the data DF maybe by having checkboxGroupInput boxes of lines you want to show
 # pass the ones you want to keep to the DF
 # then ggplot the result on button click
-  output$selectedPlots = renderPlot({
+ # output$selectedPlots = renderPlot({
+  selPlotInput = reactive({
     if(input$displaySelected == 0) {return(NULL)}
     if(is.null(getModelFits())) {return(NULL)}
     if(is.null(calcHalfLives())) {return(NULL)}
-isolate({    
+    isolate({    
     selLines = input$showPlotChoices
+      if(is.null(selLines)) {return(NULL)}
 
-cat(selLines, "*****HERE1*********\n")
-    userData = userData[userData$Line %in% selLines,]
+cat(class(selLines),length(selLines), "*****HERE1*********\n")
+      userData = userData[userData$Line %in% selLines,]
 cat(selLines, "*****HERE2*********\n")
-    allResByLine = getModelFits()## Might need to change if getModelFits also returns mod for instance
+      allResByLine = getModelFits()## Might need to change if getModelFits also returns mod for instance
 cat(selLines, "*****HERE3*********\n")
-    allResByLine = allResByLine[allResByLine$Line %in% selLines,]
-cat(selLines, "*****HER4*********\n")
-    allHalfLives = calcHalfLives()
-cat(selLines, "*****HERE5*********\n")
-    allHalfLives = allHalfLives[allHalfLives$Line %in% selLines,]
-cat(selLines, "*****HERE6*********\n")
-    
-    sel0 = ggplot() 
-    sel1 = sel0 + geom_point(data = userData, aes(x=time, y=value, colour=Sample, shape=Sample))
-    sel2 = sel1 + geom_line(data=allResByLine, aes(x=time, y=mean2nd, colour=Sample))
-    sel3 = sel2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
-    sel4 = sel3 + geom_point(data=allHalfLives, aes(x=halfLife, y=halfInitialPods), shape=0, size=3)
-    sel5 = sel4 + geom_segment(data=allHalfLives, aes(x=0, xend=halfLife, y=halfInitialPods, yend=halfInitialPods)) + geom_segment(data=allHalfLives, aes(x=halfLife, xend=halfLife, y=0, yend=halfInitialPods))
-    sel6 = sel5 + facet_wrap(~Line,scales="free") + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
-    sel7 = sel6 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
-    ##print(grid.arrange(H1layer3, H2layer3, H3layer3, nrow=1))
-    print(sel7)
-})
+      allResByLine = allResByLine[allResByLine$Line %in% selLines,]
+      allHalfLives = calcHalfLives()
+      allHalfLives = allHalfLives[allHalfLives$Line %in% selLines,]
+      
+      sel0 = ggplot() 
+      sel1 = sel0 + geom_point(data = userData, aes(x=time, y=value, colour=Sample, shape=Sample))
+      sel2 = sel1 + geom_line(data=allResByLine, aes(x=time, y=mean2nd, colour=Sample))
+      sel3 = sel2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
+      sel4 = sel3 + geom_point(data=allHalfLives, aes(x=halfLife, y=halfInitialPods), shape=0, size=3)
+      sel5 = sel4 + geom_segment(data=allHalfLives, aes(x=0, xend=halfLife, y=halfInitialPods, yend=halfInitialPods)) + geom_segment(data=allHalfLives, aes(x=halfLife, xend=halfLife, y=0, yend=halfInitialPods))
+      sel6 = sel5 + facet_wrap(~Line,scales="free") + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
+      sel7 = sel6 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
+      ##print(grid.arrange(H1layer3, H2layer3, H3layer3, nrow=1))
+  #    print(sel7)
+    })
+  })
+#  }, height=1000)
+
+  output$selectedPlots = renderPlot({
+    if(is.null(selPlotInput())) {return(NULL)}
+    print(selPlotInput())
   }, height=1000)
 
   output$plotSelector <- renderUI({
@@ -171,16 +177,15 @@ cat(selLines, "*****HERE6*********\n")
 			inline=TRUE)
   })
 
-  output$downloadPlot <- downloadHandler(
-     filename <- function() {
-       paste('selected_lines_plot', format(Sys.time(), "_%Y_%m_%d_%X"),'.png',sep='') },
-     content <- function(file) {
-       png(file, width = 900, height = 600, units = "px", pointsize = 12,
-           bg = "white", res = NA)
-       print(plotCurves())
-       dev.off()},
-     contentType = 'image/png'
-     )
+  output$downloadSelPlots <- downloadHandler(
+    filename <- function() {
+      paste('selected_lines_plot', format(Sys.time(), "_%Y_%m_%d_%X"),'.pdf',sep='') },
+    content <- function(file) {
+      pdf(file=file, width=12, height=8)
+      print(selPlotInput())
+      dev.off()},
+    contentType = 'application/pdf'
+  )
 
   output$downloadHalfLifeData <- downloadHandler(
 #    if(is.null(calcHalfLives())) {return(NULL)}

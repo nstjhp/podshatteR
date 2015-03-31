@@ -65,7 +65,10 @@ shinyUI(navbarPage("RIT analysis",
         helpText("Here you can choose the lines you'd like to see",
                  "as a subset of the full dataset."),
         uiOutput("plotSelector"),
-        actionButton("displaySelected", label = "Show plots")
+        actionButton("displaySelected", label = "Show plots"),
+        conditionalPanel(condition = "input.displaySelected",
+          downloadButton('downloadSelPlots', 'Download')
+        )
       ),
       plotOutput("selectedPlots", width = "100%")
     )

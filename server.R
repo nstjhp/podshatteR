@@ -6,8 +6,8 @@ library(grid)
 
 source("funcs.R")
 ## if FLAG = TRUE read the RDS file of all CIs etc from Marie's data
-#FLAG = TRUE
-FLAG = FALSE
+FLAG = TRUE
+#FLAG = FALSE
 
 shinyServer(function(input, output, session) {
   output$dummyPlot = renderPlot({
@@ -133,7 +133,7 @@ shinyServer(function(input, output, session) {
     if(is.null(getModelFits())) {return(NULL)}
     if(is.null(calcHalfLives())) {return(NULL)}
     isolate({    
-    selLines = input$showPlotChoices
+      selLines = input$showPlotChoices
       if(is.null(selLines)) {return(NULL)}
 
 cat(class(selLines),length(selLines), "*****HERE1*********\n")
@@ -151,23 +151,24 @@ cat(selLines, "*****HERE3*********\n")
       sel3 = sel2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
       sel4 = sel3 + geom_point(data=allHalfLives, aes(x=halfLife, y=halfInitialPods), shape=0, size=3)
       sel5 = sel4 + geom_segment(data=allHalfLives, aes(x=0, xend=halfLife, y=halfInitialPods, yend=halfInitialPods)) + geom_segment(data=allHalfLives, aes(x=halfLife, xend=halfLife, y=0, yend=halfInitialPods))
-      sel6 = sel5 + facet_wrap(~Line,scales="free") + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
+      sel6 = sel5 + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
       sel7 = sel6 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
-      ##print(grid.arrange(H1layer3, H2layer3, H3layer3, nrow=1))
   #    print(sel7)
+      if(input$sameXaxis=="fixed") {
+        sel8 = sel7 + facet_wrap(~Line, scales="fixed")
+      }
+      else {
+        sel8 = sel7 + facet_wrap(~Line,scales="free")
+      }
+      ##sel9 = grid.arrange(sel8block1, sel8block2, ncol=1))
     })
   })
 #  }, height=1000)
 
   output$selectedPlots = renderPlot({
     if(is.null(selPlotInput())) {return(NULL)}
-    ## override free_x if the user wants fixed ## THIS IS REACTIVE
-    if(input$sameXaxis=="fixed") {
-      print(selPlotInput() + facet_wrap(~Line,scales="fixed"))
-    }
-    else {
-      print(selPlotInput())
-    }
+
+    print(selPlotInput())
   }, height=1000)
 
   output$plotSelector <- renderUI({
@@ -194,11 +195,13 @@ cat(selLines, "*****HERE3*********\n")
 
   output$downloadSelPlots <- downloadHandler(
     filename <- function() {
-      paste('selected_lines_plot', format(Sys.time(), "_%Y_%m_%d_%X"),'.pdf',sep='') },
+      paste('selected_lines_plot', format(Sys.time(), "_%Y_%m_%d_%X"),'.pdf',sep='') 
+    },
     content <- function(file) {
       pdf(file=file, width=12, height=8)
       print(selPlotInput())
-      dev.off()},
+      dev.off()
+    },
     contentType = 'application/pdf'
   )
 
@@ -208,7 +211,7 @@ cat(selLines, "*****HERE3*********\n")
     # browser what name to use when saving the file.
     filename = function() {
       paste0("halfLives", format(Sys.time(), "_%Y_%m_%d_%X"),'.csv')
-	  },
+    },
     # This function should write data to a file given to it by
     # the argument 'file'.
     content = function(file) {

@@ -6,8 +6,8 @@ library(grid)
 
 source("funcs.R")
 ## if FLAG = TRUE read the RDS file of all CIs etc from Marie's data
-FLAG = TRUE
-#FLAG = FALSE
+#FLAG = TRUE
+FLAG = FALSE
 
 shinyServer(function(input, output, session) {
   output$dummyPlot = renderPlot({
@@ -108,7 +108,28 @@ shinyServer(function(input, output, session) {
     )
   )
 
-  output$halfLifePlot = renderPlot({
+  output$mytabs = renderUI({
+    nTabs = length(unique(getUserData()$Block))## input$nTabs
+    myTabs = lapply(paste('Block', 1: nTabs), tabPanel, plotOutput("dummyPlot"))
+##    allHalfLives = calcHalfLives()
+#cat("hlaHERE-115\n")
+#    myTabs = lapply(1:nTabs,
+#           function(i) {
+#cat("hlaHERE-118\n")
+#   
+#cat("hlaHERE-120","\n")
+# tmpPlot = plotOutput(assign(paste("plotR", i), renderPlot({halfLifePlot()})))
+#cat("hlaHERE-122\n")
+# tabPanel(paste('Block', i), tmpPlot, width = "200%"
+#)
+#cat("hlaHERE-124\n")
+#}
+#)
+    do.call(tabsetPanel, myTabs)
+  })
+
+  #output$halfLifePlot = renderPlot({
+  halfLifePlot = function(){ 
     if(is.null(calcHalfLives())) {return(NULL)}
     
     allHalfLives = calcHalfLives()
@@ -119,7 +140,7 @@ shinyServer(function(input, output, session) {
     hl6 = hl5 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     #hl6 = hl5 + theme(legend.position="top")
     print(hl6)
-  }, height=2000)
+  }#, height=2000)
 
 #################################
 ## Select plots to display
@@ -167,8 +188,15 @@ cat(selLines, "*****HERE3*********\n")
 
   output$selectedPlots = renderPlot({
     if(is.null(selPlotInput())) {return(NULL)}
-
+    ## override free_x if the user wants fixed
+#    isolate({    
+#      if(input$sameXaxis=="fixed") {
+#        print(selPlotInput() + facet_wrap(~Line,scales="fixed"))
+#      }
+#      else {
     print(selPlotInput())
+#      }
+#    })
   }, height=1000)
 
   output$plotSelector <- renderUI({

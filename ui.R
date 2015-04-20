@@ -48,14 +48,15 @@ shinyUI(navbarPage("RIT analysis",
         dataTableOutput('halfLifeTable')## in column but not wellPanel
       ),
       column(8,
-        tabsetPanel(
-          tabPanel("Block1", 
-            plotOutput("dummyPlot")
-          ),
-          tabPanel("Block2", 
-            plotOutput("halfLifePlot", width = "200%")
-          )
-        )
+uiOutput('mytabs')## http://stackoverflow.com/a/19470562/3275826
+#        tabsetPanel(
+#          tabPanel("Block1", 
+#            plotOutput("dummyPlot")
+#          ),
+#          tabPanel("Block2", 
+#            plotOutput("halfLifePlot", width = "200%")
+#          )
+#        )
       )
     )
   ),

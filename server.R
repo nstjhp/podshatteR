@@ -112,27 +112,20 @@ shinyServer(function(input, output, session) {
     nTabs = length(unique(getUserData()$Block))## input$nTabs
     #myTabs = lapply(paste('Block', 1: nTabs), tabPanel, plotOutput("dummyPlot"))
 
-##    allHalfLives = calcHalfLives()
-cat("hlaHERE-115\n")
     myTabs = lapply(1:nTabs, function(i) {
       plotname <- paste("plot", i, sep="")
       return(tabPanel(
         paste('Block', i), 
-        plotOutput(plotname, height = 280, width = 250)
-#cat("hlaHERE-118\n")
-#   
-#cat("hlaHERE-120","\n")
-# tmpPlot = plotOutput(assign(paste("plotR", i), renderPlot({halfLifePlot()})))
-#cat("hlaHERE-122\n")
-# tabPanel(paste('Block', i), tmpPlot, width = "200%"
-        ))
+        plotOutput(plotname, width = "200%")
+      ))
     })
     do.call(tabsetPanel, myTabs)
   })
 
+  ##https://groups.google.com/forum/#!topic/shiny-discuss/kb6lIswv0ls
   # Call renderPlot for each one. Plots are only actually generated when they
   # are visible on the web page.
-  for (i in 1:2){#max_plots) {
+  for (i in 1:100){## set to be overly high https://groups.google.com/d/msg/shiny-discuss/kb6lIswv0ls/GhT4hd-qPRQJ
     # Need local so that each item gets its own number. Without it, the value
     # of i in the renderPlot() will be the same across all instances, because
     # of when the expression is evaluated.
@@ -141,28 +134,31 @@ cat("hlaHERE-115\n")
       plotname <- paste("plot", my_i, sep="")
  
       output[[plotname]] <- renderPlot({
-        plot(1:my_i, 1:my_i,
-             xlim = c(1, 2),#max_plots),
-             ylim = c(1, 2),#max_plots),
-             main = paste("1:", my_i, ".  n is ", i, sep = "")
-        )
-      })
+        halfLifePlot(my_i)
+      }, height=2000)
     })
   }
 
-  #output$halfLifePlot = renderPlot({
-  halfLifePlot = function(){ 
+  halfLifePlot = function(local_i){ 
     if(is.null(calcHalfLives())) {return(NULL)}
+    if(is.null(getModelFits())) {return(NULL)}
     
     allHalfLives = calcHalfLives()
-    ## Build on previous g3
-    hl3 = g3 + geom_point(data=allHalfLives, aes(x=halfLife, y=halfInitialPods), shape=0, size=3)
+    allResByLine = getModelFits()## Might need to change if getModelFits also returns mod for instance
+    blockUserData = userData[userData$Block == local_i,]
+    allResByLine = allResByLine[allResByLine$Block == local_i,]
+    allHalfLives = allHalfLives[allHalfLives$Block == local_i,]
+
+    hl0 = ggplot() 
+    hl1 = hl0 + geom_point(data = blockUserData, aes(x=time, y=value, colour=Sample, shape=Sample))
+    hl2 = hl1 + geom_line(data=allResByLine, aes(x=time, y=mean2nd, colour=Sample))
+    hl3 = hl2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
+    hl3 = hl3 + geom_point(data=allHalfLives, aes(x=halfLife, y=halfInitialPods), shape=0, size=3)
     hl4 = hl3 + geom_segment(data=allHalfLives, aes(x=0, xend=halfLife, y=halfInitialPods, yend=halfInitialPods)) + geom_segment(data=allHalfLives, aes(x=halfLife, xend=halfLife, y=0, yend=halfInitialPods))
     hl5 = hl4 + facet_wrap(~Line,scales="free") + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
     hl6 = hl5 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
-    #hl6 = hl5 + theme(legend.position="top")
     print(hl6)
-  }#, height=2000)
+  }
 
 #################################
 ## Select plots to display

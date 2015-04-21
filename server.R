@@ -110,23 +110,45 @@ shinyServer(function(input, output, session) {
 
   output$mytabs = renderUI({
     nTabs = length(unique(getUserData()$Block))## input$nTabs
-    myTabs = lapply(paste('Block', 1: nTabs), tabPanel, plotOutput("dummyPlot"))
+    #myTabs = lapply(paste('Block', 1: nTabs), tabPanel, plotOutput("dummyPlot"))
+
 ##    allHalfLives = calcHalfLives()
-#cat("hlaHERE-115\n")
-#    myTabs = lapply(1:nTabs,
-#           function(i) {
+cat("hlaHERE-115\n")
+    myTabs = lapply(1:nTabs, function(i) {
+      plotname <- paste("plot", i, sep="")
+      return(tabPanel(
+        paste('Block', i), 
+        plotOutput(plotname, height = 280, width = 250)
 #cat("hlaHERE-118\n")
 #   
 #cat("hlaHERE-120","\n")
 # tmpPlot = plotOutput(assign(paste("plotR", i), renderPlot({halfLifePlot()})))
 #cat("hlaHERE-122\n")
 # tabPanel(paste('Block', i), tmpPlot, width = "200%"
-#)
-#cat("hlaHERE-124\n")
-#}
-#)
+        ))
+    })
     do.call(tabsetPanel, myTabs)
   })
+
+  # Call renderPlot for each one. Plots are only actually generated when they
+  # are visible on the web page.
+  for (i in 1:2){#max_plots) {
+    # Need local so that each item gets its own number. Without it, the value
+    # of i in the renderPlot() will be the same across all instances, because
+    # of when the expression is evaluated.
+    local({
+      my_i <- i
+      plotname <- paste("plot", my_i, sep="")
+ 
+      output[[plotname]] <- renderPlot({
+        plot(1:my_i, 1:my_i,
+             xlim = c(1, 2),#max_plots),
+             ylim = c(1, 2),#max_plots),
+             main = paste("1:", my_i, ".  n is ", i, sep = "")
+        )
+      })
+    })
+  }
 
   #output$halfLifePlot = renderPlot({
   halfLifePlot = function(){ 

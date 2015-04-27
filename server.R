@@ -8,6 +8,7 @@ source("funcs.R")
 ## if FLAG = TRUE read the RDS file of all CIs etc from Marie's data
 #FLAG = TRUE
 FLAG = FALSE
+maxBlocks = 10 ## maximum num. of blocks in exp design
 
 shinyServer(function(input, output, session) {
   output$dummyPlot = renderPlot({
@@ -40,19 +41,48 @@ shinyServer(function(input, output, session) {
 #################################
 ## Plot input data
 ##################################
-  output$dataPlot <- renderPlot({
+  output$myTabs.data = renderUI({
+    if(is.null(getUserData())) {return(NULL)}
+
+    nTabs = length(unique(getUserData()$Block))## input$nTabs
+    myDataTabs = lapply(1:nTabs, function(i) {
+      plotname <- paste("dataPlot", i, sep="")
+      return(
+        tabPanel(
+          paste('Block', i), 
+          plotOutput(plotname, width = "100%")
+        )
+      )
+    })
+    do.call(tabsetPanel, myDataTabs)
+  })
+
+  for (i in 1:maxBlocks){
+    local({
+      my_i <- i
+      plotname <- paste("dataPlot", my_i, sep="")
+ 
+      output[[plotname]] <- renderPlot({
+        dataPlot(my_i)
+      })#, height=2000)
+    })
+  }
+
+  ## output$dataPlot <- renderPlot({
+  dataPlot = function(local_i) {
     if(is.null(getUserData())) {return(NULL)}
 
     userData <<- getUserData()
+    blockUserData = userData[userData$Block == local_i,]
 
     layer0 = ggplot() 
-    layer1 = layer0 + geom_point(data = userData, aes(x=time, y=value, colour=Sample, shape=Sample))
-    layer2 = layer1 + geom_line(data = userData, aes(x=time, y=value, colour=Sample))
+    layer1 = layer0 + geom_point(data = blockUserData, aes(x=time, y=value, colour=Sample, shape=Sample))
+    layer2 = layer1 + geom_line(data = blockUserData, aes(x=time, y=value, colour=Sample))
     layer3 = layer2 + facet_wrap(~Line, scales="free_x") + scale_colour_brewer(type="qual",palette=6)
     layer4 = layer3 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     #layer4 = layer3 + theme(legend.position="top")
     print(layer4)
-  }, height = 2000)
+  }
 
 #################################
 ## Fit models and plot
@@ -108,7 +138,9 @@ shinyServer(function(input, output, session) {
     )
   )
 
-  output$mytabs = renderUI({
+  output$myTabs.halflives = renderUI({
+    if(is.null(calcHalfLives())) {return(NULL)}
+
     nTabs = length(unique(getUserData()$Block))## input$nTabs
     ## myTabs = lapply(paste('Block', 1: nTabs), tabPanel, plotOutput("dummyPlot"))
 
@@ -127,7 +159,7 @@ shinyServer(function(input, output, session) {
   ##https://groups.google.com/forum/#!topic/shiny-discuss/kb6lIswv0ls
   # Call renderPlot for each one. Plots are only actually generated when they
   # are visible on the web page.
-  for (i in 1:100){## set to be overly high https://groups.google.com/d/msg/shiny-discuss/kb6lIswv0ls/GhT4hd-qPRQJ
+  for (i in 1:maxBlocks){## set to be overly high https://groups.google.com/d/msg/shiny-discuss/kb6lIswv0ls/GhT4hd-qPRQJ
     # Need local so that each item gets its own number. Without it, the value
     # of i in the renderPlot() will be the same across all instances, because
     # of when the expression is evaluated.

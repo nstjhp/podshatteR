@@ -33,7 +33,8 @@ shinyUI(navbarPage("RIT analysis",
         dataTableOutput('userData')## Still in column but not wellPanel
       ),
       column(8,
-        plotOutput("dataPlot", width = "200%")
+         uiOutput('myTabs.data')## http://stackoverflow.com/a/19470562/3275826
+         ## plotOutput("dataPlot", width = "200%")
       )
     )
   ),
@@ -60,7 +61,7 @@ shinyUI(navbarPage("RIT analysis",
         dataTableOutput('halfLifeTable')## in column but not wellPanel
       ),
       column(8,
-uiOutput('mytabs')## http://stackoverflow.com/a/19470562/3275826
+         uiOutput('myTabs.halflives')## http://stackoverflow.com/a/19470562/3275826
 #        tabsetPanel(
 #          tabPanel("Block1", 
 #            plotOutput("dummyPlot")

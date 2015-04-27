@@ -8,7 +8,12 @@ source("funcs.R")
 ## if FLAG = TRUE read the RDS file of all CIs etc from Marie's data
 #FLAG = TRUE
 FLAG = FALSE
+
 maxBlocks = 10 ## maximum num. of blocks in exp design
+nPlotCols = 3.0 ## How many columns to show in each facet wrapped plot
+plotHeightFn = function(nLines) {## Hopefully an OK size of each panel in any number of ggplots
+  paste0(ceiling(nLines/nPlotCols)*300,"px")
+}
 
 shinyServer(function(input, output, session) {
   output$dummyPlot = renderPlot({
@@ -45,12 +50,14 @@ shinyServer(function(input, output, session) {
     if(is.null(getUserData())) {return(NULL)}
 
     nTabs = length(unique(getUserData()$Block))## input$nTabs
+    nLines = length(unique(getUserData()$Line))
+
     myDataTabs = lapply(1:nTabs, function(i) {
       plotname <- paste("dataPlot", i, sep="")
       return(
         tabPanel(
           paste('Block', i), 
-          plotOutput(plotname, width = "100%")
+          plotOutput(plotname, height = plotHeightFn(nLines))
         )
       )
     })
@@ -78,7 +85,7 @@ shinyServer(function(input, output, session) {
     layer0 = ggplot() 
     layer1 = layer0 + geom_point(data = blockUserData, aes(x=time, y=value, colour=Sample, shape=Sample))
     layer2 = layer1 + geom_line(data = blockUserData, aes(x=time, y=value, colour=Sample))
-    layer3 = layer2 + facet_wrap(~Line, scales="free_x") + scale_colour_brewer(type="qual",palette=6)
+    layer3 = layer2 + facet_wrap(~Line, scales="free_x", ncol=nPlotCols) + scale_colour_brewer(type="qual",palette=6)
     layer4 = layer3 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     #layer4 = layer3 + theme(legend.position="top")
     print(layer4)
@@ -101,12 +108,14 @@ shinyServer(function(input, output, session) {
     if(is.null(getModelFits())) {return(NULL)}
 
     nTabs = length(unique(getUserData()$Block))## input$nTabs
+    nLines = length(unique(getUserData()$Line))
+
     myModelFitTabs = lapply(1:nTabs, function(i) {
       plotname <- paste("modelfitsPlot", i, sep="")
       return(
         tabPanel(
           paste('Block', i), 
-          plotOutput(plotname, width = "100%")
+          plotOutput(plotname, height = plotHeightFn(nLines))
         )
       )
     })
@@ -137,7 +146,7 @@ shinyServer(function(input, output, session) {
     g1 = g0 + geom_point(data = blockUserData, aes(x=time, y=value, colour=Sample, shape=Sample))
     g2 = g1 + geom_line(data=allResByLine, aes(x=time, y=mean2nd, colour=Sample))
     g3 = g2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
-    g4 = g3 + facet_wrap(~Line, scales="free") + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
+    g4 = g3 + facet_wrap(~Line, scales="free", ncol=nPlotCols) + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
     g5 = g4 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     #g5 = g4 + theme(legend.position="top")
     print(g5)
@@ -175,13 +184,14 @@ shinyServer(function(input, output, session) {
 
     nTabs = length(unique(getUserData()$Block))## input$nTabs
     ## myTabs = lapply(paste('Block', 1: nTabs), tabPanel, plotOutput("dummyPlot"))
+    nLines = length(unique(getUserData()$Line))
 
     myTabs = lapply(1:nTabs, function(i) {
       plotname <- paste("plot", i, sep="")
       return(
         tabPanel(
           paste('Block', i), 
-          plotOutput(plotname, width = "200%")
+          plotOutput(plotname, height = plotHeightFn(nLines))
         )
       )
     })
@@ -201,7 +211,7 @@ shinyServer(function(input, output, session) {
  
       output[[plotname]] <- renderPlot({
         halfLifePlot(my_i)
-      }, height=2000)
+      })## , height=2000)
     })
   }
 
@@ -221,7 +231,7 @@ shinyServer(function(input, output, session) {
     hl3 = hl2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
     hl3 = hl3 + geom_point(data=allHalfLives, aes(x=halfLife, y=halfInitialPods), shape=0, size=3)
     hl4 = hl3 + geom_segment(data=allHalfLives, aes(x=0, xend=halfLife, y=halfInitialPods, yend=halfInitialPods)) + geom_segment(data=allHalfLives, aes(x=halfLife, xend=halfLife, y=0, yend=halfInitialPods))
-    hl5 = hl4 + facet_wrap(~Line,scales="free") + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
+    hl5 = hl4 + facet_wrap(~Line,scales="free", ncol=nPlotCols) + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
     hl6 = hl5 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     print(hl6)
   }
@@ -229,10 +239,6 @@ shinyServer(function(input, output, session) {
 #################################
 ## Select plots to display
 ##################################
-# Need to essentially subset the data DF maybe by having checkboxGroupInput boxes of lines you want to show
-# pass the ones you want to keep to the DF
-# then ggplot the result on button click
- # output$selectedPlots = renderPlot({
   selPlotInput = reactive({
     if(input$displaySelected == 0) {return(NULL)}
     if(is.null(getModelFits())) {return(NULL)}

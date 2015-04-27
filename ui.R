@@ -45,7 +45,8 @@ shinyUI(navbarPage("RIT analysis",
                  "(this will take some time to calculate the CIs)."),
         actionButton("action", label = "Fit model")
       ),
-        plotOutput("modelPlot", width = "200%")
+        uiOutput('myTabs.modelfits')## http://stackoverflow.com/a/19470562/3275826
+        ##plotOutput("modelPlot", width = "200%")
     )
   ),
   tabPanel("Calculate half-lives",

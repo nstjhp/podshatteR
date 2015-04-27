@@ -97,19 +97,51 @@ shinyServer(function(input, output, session) {
     return(allResByLine)## Return a list if don't do global mod assignment
   })
 
-  output$modelPlot = renderPlot({
+  output$myTabs.modelfits = renderUI({
     if(is.null(getModelFits())) {return(NULL)}
+
+    nTabs = length(unique(getUserData()$Block))## input$nTabs
+    myModelFitTabs = lapply(1:nTabs, function(i) {
+      plotname <- paste("modelfitsPlot", i, sep="")
+      return(
+        tabPanel(
+          paste('Block', i), 
+          plotOutput(plotname, width = "100%")
+        )
+      )
+    })
+    do.call(tabsetPanel, myModelFitTabs)
+  })
+
+  for (i in 1:maxBlocks){
+    local({
+      my_i <- i
+      plotname <- paste("modelfitsPlot", my_i, sep="")
+ 
+      output[[plotname]] <- renderPlot({
+        modelfitPlot(my_i)
+      })#, height=2000)
+    })
+  }
+
+##  output$modelPlot = renderPlot({
+  modelfitPlot = function(local_i) {
+    if(is.null(getModelFits())) {return(NULL)}
+
     allResByLine = getModelFits()## Might need to change if getModelFits also returns mod for instance
 
+    blockUserData = userData[userData$Block == local_i,]
+    allResByLine = allResByLine[allResByLine$Block == local_i,]
+
     g0 = ggplot() 
-    g1 = g0 + geom_point(data = userData, aes(x=time, y=value, colour=Sample, shape=Sample))
+    g1 = g0 + geom_point(data = blockUserData, aes(x=time, y=value, colour=Sample, shape=Sample))
     g2 = g1 + geom_line(data=allResByLine, aes(x=time, y=mean2nd, colour=Sample))
-    g3 <<- g2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
+    g3 = g2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
     g4 = g3 + facet_wrap(~Line, scales="free") + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
     g5 = g4 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     #g5 = g4 + theme(legend.position="top")
     print(g5)
-  }, height=2000)
+  }##, height=2000)
 
 #################################
 ## Find half-lives and plot

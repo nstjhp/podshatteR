@@ -110,14 +110,16 @@ shinyServer(function(input, output, session) {
 
   output$mytabs = renderUI({
     nTabs = length(unique(getUserData()$Block))## input$nTabs
-    #myTabs = lapply(paste('Block', 1: nTabs), tabPanel, plotOutput("dummyPlot"))
+    ## myTabs = lapply(paste('Block', 1: nTabs), tabPanel, plotOutput("dummyPlot"))
 
     myTabs = lapply(1:nTabs, function(i) {
       plotname <- paste("plot", i, sep="")
-      return(tabPanel(
-        paste('Block', i), 
-        plotOutput(plotname, width = "200%")
-      ))
+      return(
+        tabPanel(
+          paste('Block', i), 
+          plotOutput(plotname, width = "200%")
+        )
+      )
     })
     do.call(tabsetPanel, myTabs)
   })

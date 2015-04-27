@@ -3,7 +3,7 @@ library(propagate)
 #library(gridExtra)
 
 getTimePoints = function(x) {
-    xrange <- range(x$time)
+    xrange <- range(x$Time)
     xseq <- seq(from=xrange[1], to=xrange[2], length=50)## Used 80 before but choose whatever optimises looking OK vs speed
     return(xseq)
 }
@@ -16,7 +16,7 @@ mypredictNLS = function(index, times, modelFits, allNames) {
     need = allNames[index]## Now extract the correct name which is the Line
     xseq = times[[need]]## Find the timepoints that match this Line
     x = modelFits[[need]]## And then the NLS model result for this Line too
-    tmp = predictNLS(x, newdata = data.frame(time = xseq), interval = "confidence", do.sim = FALSE)## Pass do.sim=F to propagate() to stop MonteCarlo estimates ## can use alpha to change conf interval
+    tmp = predictNLS(x, newdata = data.frame(Time = xseq), interval = "confidence", do.sim = FALSE)## Pass do.sim=F to propagate() to stop MonteCarlo estimates ## can use alpha to change conf interval
     ## below subset away the other cols if not using MC (just NA or NaN in this case)
     return(tmp$summary[,1:6])## Will crash R if you return all the $prop stuff too as individually they are massive (>100MB!!)
 }
@@ -28,7 +28,7 @@ fitModels = function(data, FLAG) {
 
   ## Apply non-linear regression using the exponential decay model to each subset
   ## Fit with Levenberg-Marquardt algorithm as its more robust than nls()
-  mod = lapply(res, function(x) {nlsLM(value ~ A*exp(b*time), start = list(A=20, b=-0.5), data=x)})
+  mod = lapply(res, function(x) {nlsLM(Value ~ A*exp(b*Time), start = list(A=20, b=-0.5), data=x)})
   
   ## cheeky SpeedUp for Marie's data...
   if (FLAG) {
@@ -42,9 +42,9 @@ fitModels = function(data, FLAG) {
     pred <- lapply(seq_along(mod), mypredictNLS, times = allTPs, modelFits=mod, allNames=names(mod))## Takes a long time.....
     names(pred) = names(mod)
     
-    allTPsDF = melt(as.data.frame(allTPs,optional=TRUE), value.name = "time")## optional=T doesn't change colnames)
-    lineAndTPs = with(allTPsDF, cbind(colsplit(variable, pattern = "\\.", names = c("Block","Line.Sample")), time))## 
-    lineAndTPs = with(lineAndTPs, cbind(Block, colsplit(Line.Sample, pattern = "\\.", names = c("Line","Sample")), time))
+    allTPsDF = melt(as.data.frame(allTPs,optional=TRUE), value.name = "Time")## optional=T doesn't change colnames)
+    lineAndTPs = with(allTPsDF, cbind(colsplit(variable, pattern = "\\.", names = c("Block","Line.Sample")), Time))## 
+    lineAndTPs = with(lineAndTPs, cbind(Block, colsplit(Line.Sample, pattern = "\\.", names = c("Line","Sample")), Time))
   
     nlsRes = rbind.fill(pred)##ldply(pred) also works here (though check # and name of cols)
     

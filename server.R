@@ -83,8 +83,8 @@ shinyServer(function(input, output, session) {
     blockUserData = userData[userData$Block == local_i,]
 
     layer0 = ggplot() 
-    layer1 = layer0 + geom_point(data = blockUserData, aes(x=time, y=value, colour=Sample, shape=Sample))
-    layer2 = layer1 + geom_line(data = blockUserData, aes(x=time, y=value, colour=Sample))
+    layer1 = layer0 + geom_point(data = blockUserData, aes(x=Time, y=Value, colour=Sample, shape=Sample))
+    layer2 = layer1 + geom_line(data = blockUserData, aes(x=Time, y=Value, colour=Sample))
     layer3 = layer2 + facet_wrap(~Line, scales="free_x", ncol=nPlotCols) + scale_colour_brewer(type="qual",palette=6)
     layer4 = layer3 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     #layer4 = layer3 + theme(legend.position="top")
@@ -143,9 +143,9 @@ shinyServer(function(input, output, session) {
     allResByLine = allResByLine[allResByLine$Block == local_i,]
 
     g0 = ggplot() 
-    g1 = g0 + geom_point(data = blockUserData, aes(x=time, y=value, colour=Sample, shape=Sample))
-    g2 = g1 + geom_line(data=allResByLine, aes(x=time, y=mean2nd, colour=Sample))
-    g3 = g2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
+    g1 = g0 + geom_point(data = blockUserData, aes(x=Time, y=Value, colour=Sample, shape=Sample))
+    g2 = g1 + geom_line(data=allResByLine, aes(x=Time, y=mean2nd, colour=Sample))
+    g3 = g2 + geom_ribbon(data=allResByLine, aes(x=Time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
     g4 = g3 + facet_wrap(~Line, scales="free", ncol=nPlotCols) + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
     g5 = g4 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     #g5 = g4 + theme(legend.position="top")
@@ -226,9 +226,9 @@ shinyServer(function(input, output, session) {
     allHalfLives = allHalfLives[allHalfLives$Block == local_i,]
 
     hl0 = ggplot() 
-    hl1 = hl0 + geom_point(data = blockUserData, aes(x=time, y=value, colour=Sample, shape=Sample))
-    hl2 = hl1 + geom_line(data=allResByLine, aes(x=time, y=mean2nd, colour=Sample))
-    hl3 = hl2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
+    hl1 = hl0 + geom_point(data = blockUserData, aes(x=Time, y=Value, colour=Sample, shape=Sample))
+    hl2 = hl1 + geom_line(data=allResByLine, aes(x=Time, y=mean2nd, colour=Sample))
+    hl3 = hl2 + geom_ribbon(data=allResByLine, aes(x=Time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
     hl3 = hl3 + geom_point(data=allHalfLives, aes(x=halfLife, y=halfInitialPods), shape=0, size=3)
     hl4 = hl3 + geom_segment(data=allHalfLives, aes(x=0, xend=halfLife, y=halfInitialPods, yend=halfInitialPods)) + geom_segment(data=allHalfLives, aes(x=halfLife, xend=halfLife, y=0, yend=halfInitialPods))
     hl5 = hl4 + facet_wrap(~Line,scales="free", ncol=nPlotCols) + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
@@ -257,9 +257,9 @@ cat(selLines, "*****HERE3*********\n")
       allHalfLives = allHalfLives[allHalfLives$Line %in% selLines,]
       
       sel0 = ggplot() 
-      sel1 = sel0 + geom_point(data = userData, aes(x=time, y=value, colour=Sample, shape=Sample))
-      sel2 = sel1 + geom_line(data=allResByLine, aes(x=time, y=mean2nd, colour=Sample))
-      sel3 = sel2 + geom_ribbon(data=allResByLine, aes(x=time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
+      sel1 = sel0 + geom_point(data = userData, aes(x=Time, y=Value, colour=Sample, shape=Sample))
+      sel2 = sel1 + geom_line(data=allResByLine, aes(x=Time, y=mean2nd, colour=Sample))
+      sel3 = sel2 + geom_ribbon(data=allResByLine, aes(x=Time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
       sel4 = sel3 + geom_point(data=allHalfLives, aes(x=halfLife, y=halfInitialPods), shape=0, size=3)
       sel5 = sel4 + geom_segment(data=allHalfLives, aes(x=0, xend=halfLife, y=halfInitialPods, yend=halfInitialPods)) + geom_segment(data=allHalfLives, aes(x=halfLife, xend=halfLife, y=0, yend=halfInitialPods))
       sel6 = sel5 + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)

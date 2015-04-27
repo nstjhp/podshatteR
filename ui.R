@@ -9,6 +9,18 @@ cleaned = structure(list(Number = c(110L, 179L, 15L, 89L, 67L, 133L), Line = c(1
 "value", "time"), row.names = c(NA, 6L), class = "data.frame")
 
 shinyUI(navbarPage("RIT analysis",
+  tabPanel('About',
+    fluidPage(
+      fluidRow(
+        column(6,
+          includeMarkdown('about1.md')## table looks naff...
+        ),
+        column(6,
+          includeMarkdown('about2.md')
+        )
+      )
+    )
+  ),
   tabPanel("Upload & Plot data",
     fluidRow(
       column(4,

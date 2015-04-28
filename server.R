@@ -10,8 +10,9 @@ source("funcs.R")
 FLAG = FALSE
 
 maxBlocks = 10 ## maximum num. of blocks in exp design
-nPlotCols = 3.0 ## How many columns to show in each facet wrapped plot
-plotHeightFn = function(nLines) {## Hopefully an OK size of each panel in any number of ggplots
+nPlotColsNarrow = 3.0 ## How many columns to show in each facet wrapped plot
+nPlotColsWide = 4.0 ## How many columns to show in each facet wrapped plot
+plotHeightFn = function(nLines, nPlotCols=3.0) {## Hopefully an OK size of each panel in any number of ggplots
   paste0(ceiling(nLines/nPlotCols)*300,"px")
 }
 
@@ -85,7 +86,7 @@ shinyServer(function(input, output, session) {
     layer0 = ggplot() 
     layer1 = layer0 + geom_point(data = blockUserData, aes(x=Time, y=Value, colour=Sample, shape=Sample))
     layer2 = layer1 + geom_line(data = blockUserData, aes(x=Time, y=Value, colour=Sample))
-    layer3 = layer2 + facet_wrap(~Line, scales="free_x", ncol=nPlotCols) + scale_colour_brewer(type="qual",palette=6)
+    layer3 = layer2 + facet_wrap(~Line, scales="free_x", ncol=nPlotColsNarrow) + scale_colour_brewer(type="qual",palette=6)
     layer4 = layer3 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     #layer4 = layer3 + theme(legend.position="top")
     print(layer4)
@@ -115,7 +116,7 @@ shinyServer(function(input, output, session) {
       return(
         tabPanel(
           paste('Block', i), 
-          plotOutput(plotname, height = plotHeightFn(nLines))
+          plotOutput(plotname, height = plotHeightFn(nLines, nPlotColsWide))
         )
       )
     })
@@ -146,7 +147,7 @@ shinyServer(function(input, output, session) {
     g1 = g0 + geom_point(data = blockUserData, aes(x=Time, y=Value, colour=Sample, shape=Sample))
     g2 = g1 + geom_line(data=allResByLine, aes(x=Time, y=mean2nd, colour=Sample))
     g3 = g2 + geom_ribbon(data=allResByLine, aes(x=Time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
-    g4 = g3 + facet_wrap(~Line, scales="free", ncol=nPlotCols) + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
+    g4 = g3 + facet_wrap(~Line, scales="free", ncol=nPlotColsWide) + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
     g5 = g4 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     #g5 = g4 + theme(legend.position="top")
     print(g5)
@@ -231,7 +232,7 @@ shinyServer(function(input, output, session) {
     hl3 = hl2 + geom_ribbon(data=allResByLine, aes(x=Time, ymax = CIhigh, ymin = CIlow, fill=Sample), alpha=0.3)
     hl3 = hl3 + geom_point(data=allHalfLives, aes(x=halfLife, y=halfInitialPods), shape=0, size=3)
     hl4 = hl3 + geom_segment(data=allHalfLives, aes(x=0, xend=halfLife, y=halfInitialPods, yend=halfInitialPods)) + geom_segment(data=allHalfLives, aes(x=halfLife, xend=halfLife, y=0, yend=halfInitialPods))
-    hl5 = hl4 + facet_wrap(~Line,scales="free", ncol=nPlotCols) + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
+    hl5 = hl4 + facet_wrap(~Line,scales="free", ncol=nPlotColsNarrow) + scale_colour_brewer(type="qual", palette=6) + scale_fill_brewer(type="qual", palette=6)
     hl6 = hl5 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
     print(hl6)
   }
@@ -266,10 +267,12 @@ cat(selLines, "*****HERE3*********\n")
       sel7 = sel6 + theme(legend.position="top", legend.key.width = unit(6, "lines"), legend.key.height = unit(2, "lines"), legend.text = element_text(size = rel(1.5)), legend.title = element_text(size = rel(1.5), face="plain"))
   #    print(sel7)
       if(input$sameXaxis=="fixed") {
-        sel8 = sel7 + facet_wrap(~Line, scales="fixed")
+        ## sel8 = sel7 + facet_wrap(Block~Line, scales="fixed", ncol=nPlotColsWide)
+        sel8 = sel7 + facet_grid(Block~Line, scales="fixed")
       }
       else {
-        sel8 = sel7 + facet_wrap(~Line,scales="free")
+        ## sel8 = sel7 + facet_wrap(~Line,scales="free")
+        sel8 = sel7 + facet_grid(Block~Line, scales="free")
       }
       ##sel9 = grid.arrange(sel8block1, sel8block2, ncol=1))
     })
@@ -287,7 +290,10 @@ cat(selLines, "*****HERE3*********\n")
     print(selPlotInput())
 #      }
 #    })
-  }, height=1000)
+  }, height=function(){as.numeric(input$selPlotHeight)*100},
+     width=function(){as.numeric(input$selPlotWidth)*100}
+  )
+
 
   output$plotSelector <- renderUI({
     if(is.null(calcHalfLives())) {return(NULL)}
@@ -316,7 +322,7 @@ cat(selLines, "*****HERE3*********\n")
       paste('selected_lines_plot', format(Sys.time(), "_%Y_%m_%d_%X"),'.pdf',sep='') 
     },
     content <- function(file) {
-      pdf(file=file, width=12, height=8)
+      pdf(file=file, width=as.numeric(input$selPlotWidth), height=as.numeric(input$selPlotHeight))
       print(selPlotInput())
       dev.off()
     },

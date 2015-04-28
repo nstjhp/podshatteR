@@ -1,13 +1,6 @@
 library(shiny)
 options(shiny.trace=TRUE)
 
-cleaned = structure(list(Number = c(110L, 179L, 15L, 89L, 67L, 133L), Line = c(10722L, 
-10722L, 10723L, 10723L, 10724L, 10724L), Sample = structure(c(1L, 
-2L, 1L, 2L, 2L, 1L), .Label = c("1", "2", "3", "4"), class = "factor"), 
-    value = c(20L, 20L, 20L, 20L, 20L, 19L), time = c(0L, 0L, 
-    0L, 0L, 0L, 0L)), .Names = c("Number", "Line", "Sample", 
-"value", "time"), row.names = c(NA, 6L), class = "data.frame")
-
 shinyUI(navbarPage("RIT analysis",
   tabPanel('About',
     fluidPage(
@@ -81,10 +74,14 @@ shinyUI(navbarPage("RIT analysis",
                  "as a subset of the full dataset."),
   ## actionButton('selectAll', 'Select All'),
         uiOutput("plotSelector"),
-radioButtons('sameXaxis', 'x-axis layout', 
-c('Each panel has a individual x-axis'='free_x', 
-  'x-axis is fixed across panels'='fixed'), selected='free_x', inline=TRUE),
+        radioButtons('sameXaxis', 'x-axis layout',
+        c('Axes vary across rows/columns'='free',
+          'Axes are fixed across rows/columns'='fixed'), selected='free', inline=TRUE),
         actionButton("displaySelected", label = "Show plots"),
+        sliderInput("selPlotHeight", "Plot height:",
+                    min=0, max=20, value=4, step = 0.1, width="40%"),
+        sliderInput("selPlotWidth", "Plot width:",
+                    min=0, max=20, value=6, step = 0.1, width="40%"),
         conditionalPanel(condition = "input.displaySelected",
           downloadButton('downloadSelPlots', 'Download')
         )

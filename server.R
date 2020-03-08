@@ -36,12 +36,13 @@ shinyServer(function(input, output, session) {
     return(userData)
   })
 
-  output$userData = renderDataTable({
+  output$userData = DT::renderDataTable({
     if(is.null(getUserData())) {return(NULL)}
     results = getUserData()
   }, 
     options = list(lengthMenu = list(c(20, 50, -1), c('20', '50', 'All')),
-                   pageLength = 10)
+                   pageLength = 10),
+    rownames= FALSE
   )
 
 #################################
@@ -170,14 +171,15 @@ shinyServer(function(input, output, session) {
   })
 
 ## show Block as well - need to check ouput of res = dlply in fitModels (also might need to look at the subsetting [1:6] e.g.
-  output$halfLifeTable = renderDataTable({
+  output$halfLifeTable = DT::renderDataTable({
     if(is.null(calcHalfLives())) {return(NULL)}
     results = calcHalfLives()
   }, 
     options = list(lengthMenu = list(c(20, 50, -1), c('20', '50', 'All')),
                    pageLength = 10,
-                   rowCallback = I("function( nRow, aData) {ind = 3; $('td:eq('+ind+')', nRow).html( parseFloat(aData[ind]).toFixed(2) );}")## from http://stackoverflow.com/a/28093512 to display 2 decimal places ## ind=3 means column 4
-    )
+                   rowCallback = DT::JS("function( nRow, aData) {ind = 3; $('td:eq('+ind+')', nRow).html( parseFloat(aData[ind]).toFixed(2) );}")## from http://stackoverflow.com/a/28093512 to display 2 decimal places ## ind=3 means column 4
+    ),
+    rownames= FALSE
   )
 
   output$myTabs.halflives = renderUI({

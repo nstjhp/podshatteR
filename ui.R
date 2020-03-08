@@ -23,7 +23,7 @@ shinyUI(navbarPage("RIT analysis",
           fileInput('tidyFile', 'Upload your data: Choose CSV file',
           accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv'))
         ),
-        dataTableOutput('userData')## Still in column but not wellPanel
+        DT::dataTableOutput('userData')## Still in column but not wellPanel
       ),
       column(8,
          uiOutput('myTabs.data')## http://stackoverflow.com/a/19470562/3275826
@@ -52,7 +52,7 @@ shinyUI(navbarPage("RIT analysis",
               downloadButton('downloadHalfLifeData', 'Download')
             )
         ),
-        dataTableOutput('halfLifeTable')## in column but not wellPanel
+        DT::dataTableOutput('halfLifeTable')## in column but not wellPanel
       ),
       column(8,
          uiOutput('myTabs.halflives')## http://stackoverflow.com/a/19470562/3275826
